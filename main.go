@@ -7,8 +7,18 @@ import (
 	"net/http"
 	"os"
 	"regexp"
+	"runtime"
+	"strconv"
+	"strings"
 	"time"
 )
+
+var format = ""
+var nl = "\n"
+var loop = false
+
+// 1000 ms as default
+var delay int64 = 1000 * 000000
 
 func microTime() float64 {
 	loc, _ := time.LoadLocation("UTC")
@@ -32,21 +42,88 @@ func die(msg string) {
 	os.Exit(1)
 }
 
-func main() {
-	start := microTime()
+func detectOS() {
+	if //goland:noinspection ALL
+	runtime.GOOS == "windows" {
+		nl = "\r\n"
+	}
+}
+
+func processArgs() {
 	if len(os.Args) < 2 {
 		die("Not enough arguments.")
 	}
 
-	url := os.Args[1]
-	match, _ := regexp.Match(`^http(s|)://\w.*`, []byte(url))
-	if match {
-		resp, err := http.Get(url)
-		check(err)
+	if len(os.Args) > 2 {
+		for _, arg := range os.Args[2:] {
+			if arg == "--json" {
+				format = "json"
+			}
 
-		res := (microTime() - start) * 1000
-		fmt.Printf("%s\t%3d\t%f\n", url, resp.StatusCode, round(res, 000000.000001))
-	} else {
+			if arg == "--csv" {
+				format = "csv"
+			}
+
+			if arg == "--loop" {
+				loop = true
+			}
+
+			delayMatch, _ := regexp.Match(`^--delay=\d.*$`, []byte(arg))
+			if delayMatch {
+				d := strings.ReplaceAll(arg, "--delay=", "")
+				dInt, _ := strconv.ParseInt(d, 10, 64)
+				delay = dInt * 1000000
+			}
+		}
+	}
+}
+
+func getURL() string {
+	url := os.Args[1]
+	match, _ := regexp.Match(`^http(s|)://\w.*\.\w{2,3}$`, []byte(url))
+	if !match {
 		die("Argument '" + url + "' is not a valid URL")
+	}
+
+	return url
+}
+
+func pingURL(url string) {
+	start := microTime()
+	resp, err := http.Get(url)
+	check(err)
+
+	res := (microTime() - start) * 1000
+
+	template := "%s\t%3d\t%f\n"
+	switch format {
+	case "json":
+		template = "{\"url\":\"%s\",\"status\":%3d,\"time\":%f}"
+		break
+
+	case "csv":
+		if !loop {
+			template = "url,status,time" + nl + "%s,%3d,%f" + nl
+		} else {
+			template = "%s,%3d,%f" + nl
+		}
+	}
+
+	fmt.Printf(template, url, resp.StatusCode, round(res, 000000.000001))
+}
+
+func main() {
+	detectOS()
+	processArgs()
+	url := getURL()
+
+	if !loop {
+		pingURL(url)
+		os.Exit(0)
+	}
+
+	for {
+		pingURL(url)
+		time.Sleep(time.Duration(delay))
 	}
 }
