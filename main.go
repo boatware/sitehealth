@@ -18,7 +18,7 @@ var nl = "\n"
 var loop = false
 
 // 1000 ms as default
-var delay int64 = 1000 * 000000
+var delay int64 = 1000 * 1000000
 
 func microTime() float64 {
 	loc, _ := time.LoadLocation("UTC")
