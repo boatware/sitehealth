@@ -8,12 +8,17 @@ Build the app:<br />
 `go build`
 
 Run:<br />
-`./sitehealth [host]` (*Unix/Mac*)<br />
-`sitehealth.exe [host]` (*Windows*)
+`./sitehealth [...args]` (*Unix/Mac*)<br />
+`sitehealth.exe [...args]` (*Windows*)
+
+(Optional) Install the app (*tested on Linux only*):<br />
+`sudo ./install.sh`<br />
+then logout and in again and run<br />
+`sitehealth`
 
 ## Usage
 
 ```shell
-$ sitehealth [host]
-        host    A valid URL to any hostname prefixed by "http://" or "https://"
+$ sitehealth
 ```
+This will print the usage including a few examples.
