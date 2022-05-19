@@ -15,47 +15,53 @@ func processArgs() {
 
 	if len(os.Args) >= 1 {
 		for _, arg := range os.Args[1:] {
-			if arg == "--help" || arg == "-h" {
+			switch arg {
+			case "--help":
+			case "-h":
 				usage()
 				os.Exit(0)
-			}
 
-			if arg == "--json" {
+			case "--json":
 				format = "json"
-			}
+				break
 
-			if arg == "--csv" {
+			case "--csv":
 				format = "csv"
-			}
+				break
 
-			if arg == "--loop" {
+			case "--loop":
 				loop = true
 				if followRedirect {
 					die("Cannot follow redirects in a loop")
 				}
-			}
+				break
 
-			if arg == "--include-length" || arg == "-l" {
+			case "--include-length":
+			case "-l":
 				getContentLength = true
-			}
+				break
 
-			if arg == "--follow-redirect" || arg == "-f" {
+			case "--follow-redirect":
+			case "-f":
 				followRedirect = true
 				if loop {
 					die("Cannot follow redirects in a loop")
 				}
-			}
+				break
 
-			delayMatch, _ := regexp.Match(`^--delay=\d.*$`, []byte(arg))
-			if delayMatch {
-				d := strings.ReplaceAll(arg, "--delay=", "")
-				dInt, _ := strconv.ParseInt(d, 10, 64)
-				delay = dInt * 1000000
-			}
+			default:
+				delayMatch, _ := regexp.Match(`^--delay=\d.*$`, []byte(arg))
+				if delayMatch {
+					d := strings.ReplaceAll(arg, "--delay=", "")
+					dInt, _ := strconv.ParseInt(d, 10, 64)
+					delay = dInt * 1000000
+				}
 
-			urlMatch, _ := regexp.Match(`^http(s|)://\w.*\.\w{2,3}$`, []byte(arg))
-			if urlMatch {
-				url = arg
+				urlMatch, _ := regexp.Match(`^http(s|)://\w.*\.\w{2,3}$`, []byte(arg))
+				if urlMatch {
+					url = arg
+				}
+				break
 			}
 		}
 

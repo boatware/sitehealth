@@ -12,7 +12,7 @@ import (
 var format = ""
 var nl = "\n"
 var loop = false
-var version = "1.0"
+var version = "1.0.0"
 var url = ""
 var getContentLength = false
 var followRedirect = false
